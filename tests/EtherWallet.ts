@@ -8,7 +8,7 @@ describe("Deployment", function () {
     beforeEach(async function () {
         const EtherWallet = await ethers.getContractFactory("EtherWallet");
         etherwalletContract = await EtherWallet.deploy();
-        await EtherWallet.deploy();
+        await etherwalletContract.deploy();
     })
 
     it("Should set owner to deployer account", async function () {
