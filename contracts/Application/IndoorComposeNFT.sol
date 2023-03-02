@@ -8,8 +8,12 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155Burn
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract IndoorComposeNFT is Initializable, ERC1155Upgradeable, OwnableUpgradeable, PausableUpgradeable, ERC1155BurnableUpgradeable, ERC1155SupplyUpgradeable, UUPSUpgradeable {
+
+    uint public mintPrice = 0.06 ether;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -36,11 +40,27 @@ contract IndoorComposeNFT is Initializable, ERC1155Upgradeable, OwnableUpgradeab
         _unpause();
     }
 
-    function mint(address account, uint256 id, uint256 amount, bytes memory data)
+    function uri(uint256 _Id) override public view returns (string memory) {
+        require(exists(_Id), "uri not exist");
+        return string(
+        abi.encodePacked(
+            "ipfs://QmNVXihucDWiJYf21rSfCfuDEP8ZyeAos9mvmQXrFPbwjW/",
+            Strings.toString(_Id),
+            ".json")
+        );
+    }
+
+    function mint(uint256 id, uint256 amount)
         public
-        onlyOwner
+        payable
     {
-        _mint(account, id, amount, data);
+        require(msg.value == amount * mintPrice, "not enought fund");
+        _mint(msg.sender, id, amount, "");
+    }
+
+    function withdraw(address _addr) external onlyOwner {
+        uint balance = address(this).balance;
+        payable(_addr).transfer(balance);
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
