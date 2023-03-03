@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract IndoorComposeNFT is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply {
     uint public mintPrice = 0.06 ether;
 
-    constructor() ERC1155("") {}
+    constructor() ERC1155("ipfs://bafybeia62gqwemhwoebnl235qy6o56pyoohn64nvdflp5557jgc26sxp3q/") {}
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
@@ -34,12 +34,13 @@ contract IndoorComposeNFT is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC115
         );
     }
 
-    function mint(uint256 id, uint256 amount)
+    // Will chang to dynami ID next version
+    function mint(uint256 amount)
         public
         payable
     {
         require(msg.value == amount * mintPrice, "not enought fund");
-        _mint(msg.sender, id, amount, "");
+        _mint(msg.sender, 0, amount, "");
     }
 
     function withdraw(address _addr) external onlyOwner {
