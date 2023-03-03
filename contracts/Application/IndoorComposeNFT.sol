@@ -1,32 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155BurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract IndoorComposeNFT is Initializable, ERC1155Upgradeable, OwnableUpgradeable, PausableUpgradeable, ERC1155BurnableUpgradeable, ERC1155SupplyUpgradeable, UUPSUpgradeable {
-
+contract IndoorComposeNFT is ERC1155, Ownable, Pausable, ERC1155Burnable, ERC1155Supply {
     uint public mintPrice = 0.06 ether;
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
-        _disableInitializers();
-    }
-
-    function initialize() initializer public {
-        __ERC1155_init("");
-        __Ownable_init();
-        __Pausable_init();
-        __ERC1155Burnable_init();
-        __ERC1155Supply_init();
-        __UUPSUpgradeable_init();
-    }
+    constructor() ERC1155("") {}
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
@@ -39,12 +24,11 @@ contract IndoorComposeNFT is Initializable, ERC1155Upgradeable, OwnableUpgradeab
     function unpause() public onlyOwner {
         _unpause();
     }
-
     function uri(uint256 _Id) override public view returns (string memory) {
-        require(exists(_Id), "uri not exist");
+        require(exists(_Id), "uri does not exist");
         return string(
         abi.encodePacked(
-            "ipfs://QmNVXihucDWiJYf21rSfCfuDEP8ZyeAos9mvmQXrFPbwjW/",
+            super.uri(_Id),
             Strings.toString(_Id),
             ".json")
         );
@@ -63,7 +47,7 @@ contract IndoorComposeNFT is Initializable, ERC1155Upgradeable, OwnableUpgradeab
         payable(_addr).transfer(balance);
     }
 
-    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
+     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
         public
         onlyOwner
     {
@@ -73,14 +57,8 @@ contract IndoorComposeNFT is Initializable, ERC1155Upgradeable, OwnableUpgradeab
     function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
         internal
         whenNotPaused
-        override(ERC1155Upgradeable, ERC1155SupplyUpgradeable)
+        override(ERC1155, ERC1155Supply)
     {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        onlyOwner
-        override
-    {}
 }
